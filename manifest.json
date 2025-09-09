@@ -1,0 +1,21 @@
+{
+  "name": "AI Image Generator",
+  "short_name": "Image Gen",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#1F2937",
+  "description": "An AI-powered image generation tool.",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/O7q3nOa.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.imgur.com/O7q3nOa.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
