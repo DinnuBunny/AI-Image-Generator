@@ -69,7 +69,7 @@ let promptFavorites = [];
 
 // --- Initialization ---
 function initializeApp() {
-  watermarkNameInput.value = "DinnuPixel";
+  watermarkNameInput.value = "DinnuBunny";
   loadFromLocalStorage();
   renderHistory();
   renderFavorites();
@@ -144,6 +144,21 @@ function setupEventListeners() {
   });
 }
 
+// --- HELPER FUNCTION (This was missing) ---
+function toggleButtonLoading(button, isLoading) {
+  const text = button.querySelector(".btn-text");
+  const loader = button.querySelector(".loader");
+  if (isLoading) {
+    text.style.display = "none";
+    loader.style.display = "inline-block";
+    button.disabled = true;
+  } else {
+    text.style.display = "inline-block";
+    loader.style.display = "none";
+    button.disabled = false;
+  }
+}
+
 // --- TAB SWITCHING LOGIC ---
 function switchTab(tab) {
   errorMessage.style.display = "none";
@@ -212,7 +227,6 @@ function loadFromLocalStorage() {
   promptHistory = JSON.parse(localStorage.getItem("promptHistory")) || [];
   promptFavorites = JSON.parse(localStorage.getItem("promptFavorites")) || [];
 }
-// (Rendering functions for history/favorites are omitted for brevity but would go here)
 function renderHistory() {
   historyContent.innerHTML = "";
   if (promptHistory.length === 0) {
@@ -316,6 +330,24 @@ function handleReferenceImageUpload(event) {
     cancelImageBtn.style.display = "inline-block";
   };
   reader.readAsDataURL(file);
+}
+
+function switchHistoryTab(tab) {
+  if (tab === "history") {
+    historyContent.style.display = "block";
+    favoritesContent.style.display = "none";
+    historyTabBtn.classList.add("bg-blue-600", "text-white");
+    historyTabBtn.classList.remove("bg-gray-700", "text-gray-300");
+    favoritesTabBtn.classList.add("bg-gray-700", "text-gray-300");
+    favoritesTabBtn.classList.remove("bg-blue-600", "text-white");
+  } else {
+    favoritesContent.style.display = "block";
+    historyContent.style.display = "none";
+    favoritesTabBtn.classList.add("bg-blue-600", "text-white");
+    favoritesTabBtn.classList.remove("bg-gray-700", "text-gray-300");
+    historyTabBtn.classList.add("bg-gray-700", "text-gray-300");
+    historyTabBtn.classList.remove("bg-blue-600", "text-white");
+  }
 }
 
 // --- LLM Logic ---
@@ -482,7 +514,7 @@ async function generateImages(prompt) {
   if (watermarkToggle.checked) {
     const watermarkName = watermarkNameInput.value.trim();
     if (watermarkName) {
-      combinedPrompt = `${prompt} plus a delicate, stylish text watermark displaying "${watermarkName}" positioned in the lower right corner with minimal bottom spacing, understated, partially transparent, and seamlessly merging with the background.`;
+      combinedPrompt = `${prompt} and a small elegant text watermark reading "${watermarkName}" placed in the bottom right corner, subtle, semi-transparent, blending harmoniously with the background.`;
     }
   }
 
