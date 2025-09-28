@@ -1,98 +1,477 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DinnuPixels</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="bg-gray-900 text-white flex justify-center items-start min-h-screen p-4">
-    <div class="w-full max-w-2xl bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 my-8">
-        <h1 class="text-2xl md:text-3xl font-bold text-center mb-4 text-gray-100">DinnuPixels</h1>
-        
-        <!-- App Navigation Tabs -->
-        <div class="flex border-b border-gray-700 mb-6">
-            <button id="createTabBtn" class="flex-1 p-3 text-white font-semibold border-b-2 border-blue-500">Create</button>
-            <button id="imageToPromptTabBtn" class="flex-1 p-3 text-gray-400 font-semibold border-b-2 border-transparent hover:border-gray-500">Image to Prompt</button>
-        </div>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body
+    class="bg-gray-900 text-white flex justify-center items-start min-h-screen p-4"
+  >
+    <div
+      class="w-full max-w-2xl bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 my-8"
+    >
+      <h1 class="text-2xl md:text-3xl font-bold text-center mb-4 text-gray-100">
+        DinnuPixels
+      </h1>
 
-        <!-- Page 1: Image Generation -->
-        <div id="createPage">
-            <fieldset id="settingsFieldset">
-                <!-- All form elements for the create page go here -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Reference Image (Optional)</label>
-                    <div class="flex items-center space-x-4">
-                        <label for="imageUpload" class="cursor-pointer bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg">Choose File</label>
-                        <input type="file" id="imageUpload" accept="image/png, image/jpeg">
-                        <div id="referenceImageContainer" class="w-16 h-16 bg-gray-700 rounded-lg shrink-0 overflow-hidden" style="display: none;"><img id="referenceImage" src="" alt="Reference" class="w-full h-full object-cover"></div>
-                        <span id="fileName" class="text-gray-400 truncate">No file chosen</span>
-                        <button id="cancelImageBtn" class="text-gray-400 hover:text-white" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                    </div>
-                </div>
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-2">
-                        <label for="prompt" class="block text-sm font-medium text-gray-300">Main Prompt</label>
-                        <div class="flex space-x-2 items-center">
-                            <button id="historyBtn" title="Prompt History" class="p-1.5 bg-gray-600 rounded-md"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M12 8v4l2 2"></path></svg></button>
-                            <button id="improveBtn" class="text-xs bg-indigo-600 text-white font-semibold py-1 px-2 rounded-md flex items-center"><span class="btn-text">✨ Improve</span><span class="loader btn-loader-small" style="display: none;"></span></button>
-                            <button id="surpriseBtn" class="text-xs bg-purple-600 text-white font-semibold py-1 px-2 rounded-md flex items-center"><span class="btn-text">✨ Surprise Me</span><span class="loader btn-loader-small" style="display: none;"></span></button>
-                        </div>
-                    </div>
-                    <div class="relative"><textarea id="prompt" rows="5" class="w-full p-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg resize-none"></textarea><button id="clearPromptBtn" class="absolute top-3 right-3 text-gray-400 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
-                </div>
-                <div class="mb-6">
-                    <div class="flex justify-between items-center mb-2">
-                        <label for="watermarkName" class="text-sm font-medium text-gray-300">Watermark</label>
-                        <label for="watermarkToggle" class="cursor-pointer"><div class="relative"><input type="checkbox" id="watermarkToggle" class="sr-only toggle-checkbox" checked><div class="toggle-label flex items-center"><div class="toggle-bg block bg-gray-600 w-14 h-8 rounded-full"></div><div class="toggle-dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full"></div></div></div></label>
-                    </div>
-                    <input type="text" id="watermarkName" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
-                    <div class="flex items-center justify-around bg-gray-700 rounded-lg p-1 h-10"><label class="w-full text-center cursor-pointer"><input type="radio" name="aspectRatio" value="1:1" class="sr-only peer"><span class="inline-block w-full p-2 rounded-md peer-checked:bg-blue-600">Square</span></label><label class="w-full text-center cursor-pointer"><input type="radio" name="aspectRatio" value="9:16" class="sr-only peer" checked><span class="inline-block w-full p-2 rounded-md peer-checked:bg-blue-600">Portrait</span></label><label class="w-full text-center cursor-pointer"><input type="radio" name="aspectRatio" value="16:9" class="sr-only peer"><span class="inline-block w-full p-2 rounded-md peer-checked:bg-blue-600">Landscape</span></label></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div><label class="block text-sm font-medium text-gray-300 mb-2">Images per Cycle (Max 4)</label><div class="flex items-center justify-center bg-gray-700 rounded-lg p-1 h-10 w-40 mx-auto"><button id="minusBtn" class="px-4 py-1 text-lg font-bold">-</button><span id="imageCountDisplay" class="px-4 text-lg">1</span><button id="plusBtn" class="px-4 py-1 text-lg font-bold">+</button></div></div><div><label class="block text-sm font-medium text-gray-300 mb-2">Loop Count</label><div class="flex items-center justify-center bg-gray-700 rounded-lg p-1 h-10 w-40 mx-auto"><button id="loopMinusBtn" class="px-4 py-1 text-lg font-bold">-</button><span id="loopCountDisplay" class="px-4 text-lg">1</span><button id="loopPlusBtn" class="px-4 py-1 text-lg font-bold">+</button></div></div></div>
-                <div class="mb-6"><label for="autoDownloadToggle" class="block text-sm font-medium text-gray-300 mb-2 text-center">Auto Download</label><div class="flex items-center justify-center h-10"><label for="autoDownloadToggle" class="cursor-pointer"><div class="relative"><input type="checkbox" id="autoDownloadToggle" class="sr-only toggle-checkbox"><div class="toggle-label flex items-center"><div class="toggle-bg block bg-gray-600 w-14 h-8 rounded-full"></div><div class="toggle-dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full"></div></div></div></label></div></div>
-            </fieldset>
-            <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center"><span id="generateBtnContent"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2 inline-block"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>Generate Image</span></button>
-            <p id="loopStatus" class="text-center text-yellow-400 mt-4 font-medium" style="display: none;"></p>
-            <div id="resultsGrid" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </div>
-        
-        <!-- Page 2: Image to Prompt -->
-        <div id="imageToPromptPage" style="display: none;">
-            <div class="mb-6">
-                <label for="i2pUploadInput" class="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white rounded-lg p-8 flex flex-col items-center justify-center border-2 border-dashed border-gray-500">
-                    <div id="i2pUploadPlaceholder"><svg class="w-12 h-12 text-gray-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"></path></svg><p class="mt-2 text-sm text-gray-400">Click to upload</p></div>
-                    <img id="i2pPreview" src="" class="max-h-48 rounded-lg" style="display: none;" alt="Image Preview">
-                </label>
-                <input type="file" id="i2pUploadInput" accept="image/png, image/jpeg">
+      <!-- App Navigation Tabs -->
+      <div class="flex border-b border-gray-700 mb-6">
+        <button
+          id="createTabBtn"
+          class="flex-1 p-3 text-white font-semibold border-b-2 border-blue-500"
+        >
+          Create
+        </button>
+        <button
+          id="imageToPromptTabBtn"
+          class="flex-1 p-3 text-gray-400 font-semibold border-b-2 border-transparent hover:border-gray-500"
+        >
+          Image to Prompt
+        </button>
+      </div>
+
+      <!-- Page 1: Image Generation -->
+      <div id="createPage">
+        <fieldset id="settingsFieldset">
+          <!-- All form elements for the create page go here -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-300 mb-2"
+              >Reference Image (Optional)</label
+            >
+            <div class="flex items-center space-x-4">
+              <label
+                for="imageUpload"
+                class="cursor-pointer bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg"
+                >Choose File</label
+              >
+              <input
+                type="file"
+                id="imageUpload"
+                accept="image/png, image/jpeg"
+              />
+              <div
+                id="referenceImageContainer"
+                class="w-16 h-16 bg-gray-700 rounded-lg shrink-0 overflow-hidden"
+                style="display: none"
+              >
+                <img
+                  id="referenceImage"
+                  src=""
+                  alt="Reference"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <span id="fileName" class="text-gray-400 truncate"
+                >No file chosen</span
+              >
+              <button
+                id="cancelImageBtn"
+                class="text-gray-400 hover:text-white"
+                style="display: none"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             </div>
-            <button id="i2pGenerateBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center opacity-50" disabled><span class="btn-text">Generate Prompt</span><span class="loader btn-loader-small" style="display: none;"></span></button>
-            <div id="i2pResultContainer" class="mt-6" style="display: none;">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Generated Prompt</label>
-                <div class="relative"><textarea id="i2pResultText" rows="6" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg resize-none" readonly></textarea><button id="i2pCopyBtn" class="absolute top-2 right-2 text-gray-400 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg></button></div>
+          </div>
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+              <label
+                for="prompt"
+                class="block text-sm font-medium text-gray-300"
+                >Main Prompt</label
+              >
+              <div class="flex space-x-2 items-center">
+                <button
+                  id="historyBtn"
+                  title="Prompt History"
+                  class="p-1.5 bg-gray-600 rounded-md"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                    ></path>
+                    <path d="M12 8v4l2 2"></path>
+                  </svg>
+                </button>
+                <button
+                  id="improveBtn"
+                  class="text-xs bg-indigo-600 text-white font-semibold py-1 px-2 rounded-md flex items-center"
+                >
+                  <span class="btn-text">✨ Improve</span
+                  ><span
+                    class="loader btn-loader-small"
+                    style="display: none"
+                  ></span>
+                </button>
+                <button
+                  id="surpriseBtn"
+                  class="text-xs bg-purple-600 text-white font-semibold py-1 px-2 rounded-md flex items-center"
+                >
+                  <span class="btn-text">✨ Surprise Me</span
+                  ><span
+                    class="loader btn-loader-small"
+                    style="display: none"
+                  ></span>
+                </button>
+              </div>
             </div>
+            <div class="relative">
+              <textarea
+                id="prompt"
+                rows="5"
+                placeholder="Start with a word, end with a masterpiece—DinnuPixels brings your vision to life..."
+                class="w-full p-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg resize-none"
+              ></textarea
+              ><button
+                id="clearPromptBtn"
+                class="absolute top-3 right-3 text-gray-400 hover:text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+              <label
+                for="watermarkName"
+                class="text-sm font-medium text-gray-300"
+                >Watermark</label
+              >
+              <label for="watermarkToggle" class="cursor-pointer"
+                ><div class="relative">
+                  <input
+                    type="checkbox"
+                    id="watermarkToggle"
+                    class="sr-only toggle-checkbox"
+                    checked
+                  />
+                  <div class="toggle-label flex items-center">
+                    <div
+                      class="toggle-bg block bg-gray-600 w-14 h-8 rounded-full"
+                    ></div>
+                    <div
+                      class="toggle-dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full"
+                    ></div>
+                  </div></div
+              ></label>
+            </div>
+            <input
+              type="text"
+              id="watermarkName"
+              class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg"
+            />
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-300 mb-2"
+              >Aspect Ratio</label
+            >
+            <div
+              class="flex items-center justify-around bg-gray-700 rounded-lg p-1 h-10"
+            >
+              <label class="w-full text-center cursor-pointer"
+                ><input
+                  type="radio"
+                  name="aspectRatio"
+                  value="1:1"
+                  class="sr-only peer"
+                /><span
+                  class="inline-block w-full p-2 rounded-md peer-checked:bg-blue-600"
+                  >Square</span
+                ></label
+              ><label class="w-full text-center cursor-pointer"
+                ><input
+                  type="radio"
+                  name="aspectRatio"
+                  value="9:16"
+                  class="sr-only peer"
+                  checked
+                /><span
+                  class="inline-block w-full p-2 rounded-md peer-checked:bg-blue-600"
+                  >Portrait</span
+                ></label
+              ><label class="w-full text-center cursor-pointer"
+                ><input
+                  type="radio"
+                  name="aspectRatio"
+                  value="16:9"
+                  class="sr-only peer"
+                /><span
+                  class="inline-block w-full p-2 rounded-md peer-checked:bg-blue-600"
+                  >Landscape</span
+                ></label
+              >
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2"
+                >Images per Cycle (Max 4)</label
+              >
+              <div
+                class="flex items-center justify-center bg-gray-700 rounded-lg p-1 h-10 w-40 mx-auto"
+              >
+                <button id="minusBtn" class="px-4 py-1 text-lg font-bold">
+                  -</button
+                ><span id="imageCountDisplay" class="px-4 text-lg">1</span
+                ><button id="plusBtn" class="px-4 py-1 text-lg font-bold">
+                  +
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2"
+                >Loop Count</label
+              >
+              <div
+                class="flex items-center justify-center bg-gray-700 rounded-lg p-1 h-10 w-40 mx-auto"
+              >
+                <button id="loopMinusBtn" class="px-4 py-1 text-lg font-bold">
+                  -</button
+                ><span id="loopCountDisplay" class="px-4 text-lg">1</span
+                ><button id="loopPlusBtn" class="px-4 py-1 text-lg font-bold">
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="mb-6">
+            <label
+              for="autoDownloadToggle"
+              class="block text-sm font-medium text-gray-300 mb-2 text-center"
+              >Auto Download</label
+            >
+            <div class="flex items-center justify-center h-10">
+              <label for="autoDownloadToggle" class="cursor-pointer"
+                ><div class="relative">
+                  <input
+                    type="checkbox"
+                    id="autoDownloadToggle"
+                    class="sr-only toggle-checkbox"
+                  />
+                  <div class="toggle-label flex items-center">
+                    <div
+                      class="toggle-bg block bg-gray-600 w-14 h-8 rounded-full"
+                    ></div>
+                    <div
+                      class="toggle-dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full"
+                    ></div>
+                  </div></div
+              ></label>
+            </div>
+          </div>
+        </fieldset>
+        <button
+          id="generateBtn"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center"
+        >
+          <span id="generateBtnContent">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="mr-2 inline-block"
+            >
+              <path
+                d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"
+              ></path>
+              <path d="M5 3v4"></path>
+              <path d="M19 17v4"></path>
+              <path d="M3 5h4"></path>
+              <path d="M17 19h4"></path>
+            </svg>
+            Generate Image
+          </span>
+        </button>
+        <p
+          id="loopStatus"
+          class="text-center text-yellow-400 mt-4 font-medium"
+          style="display: none"
+        ></p>
+        <div
+          id="resultsGrid"
+          class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4"
+        ></div>
+      </div>
+
+      <!-- Page 2: Image to Prompt -->
+      <div id="imageToPromptPage" style="display: none">
+        <div class="mb-6">
+          <label
+            for="i2pUploadInput"
+            class="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white rounded-lg p-8 flex flex-col items-center justify-center border-2 border-dashed border-gray-500"
+          >
+            <div id="i2pUploadPlaceholder">
+              <svg
+                class="w-12 h-12 text-gray-400 mx-auto"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                ></path>
+              </svg>
+              <p class="mt-2 text-sm text-gray-400">Click to upload</p>
+            </div>
+            <img
+              id="i2pPreview"
+              src=""
+              class="max-h-48 rounded-lg"
+              style="display: none"
+              alt="Image Preview"
+            />
+          </label>
+          <input
+            type="file"
+            id="i2pUploadInput"
+            accept="image/png, image/jpeg"
+          />
         </div>
-        
-        <p id="errorMessage" class="text-red-400 text-center mt-4" style="display: none;"></p>
-        <div id="mainLoader" class="w-full flex justify-center mt-8" style="display: none;"><div class="loader"></div></div>
+        <button
+          id="i2pGenerateBtn"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center opacity-50"
+          disabled
+        >
+          <span class="btn-text">Generate Prompt</span
+          ><span class="loader btn-loader-small" style="display: none"></span>
+        </button>
+        <div id="i2pResultContainer" class="mt-6" style="display: none">
+          <label class="block text-sm font-medium text-gray-300 mb-2"
+            >Generated Prompt</label
+          >
+          <div class="relative">
+            <textarea
+              id="i2pResultText"
+              rows="6"
+              class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg resize-none"
+              readonly
+            ></textarea
+            ><button
+              id="i2pCopyBtn"
+              class="absolute top-2 right-2 text-gray-400 hover:text-white"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                <path
+                  d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p
+        id="errorMessage"
+        class="text-red-400 text-center mt-4"
+        style="display: none"
+      ></p>
+      <div
+        id="mainLoader"
+        class="w-full flex justify-center mt-8"
+        style="display: none"
+      >
+        <div class="loader"></div>
+      </div>
     </div>
-    
+
     <!-- History Modal -->
-    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50" style="display: none;">
-        <div class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
-            <div class="p-4 border-b border-gray-700 flex justify-between items-center"><h2 class="text-xl font-bold">Prompt Library</h2><button id="closeHistoryModalBtn" class="text-gray-400 hover:text-white">&times;</button></div>
-            <div class="flex border-b border-gray-700"><button id="historyTabBtn" class="flex-1 p-3 bg-blue-600 text-white font-semibold">History</button><button id="favoritesTabBtn" class="flex-1 p-3 bg-gray-700 text-gray-300 font-semibold">Favorites</button></div>
-            <div id="historyContent" class="p-4 overflow-y-auto"></div>
-            <div id="favoritesContent" class="p-4 overflow-y-auto" style="display: none;"></div>
+    <div
+      id="historyModal"
+      class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50"
+      style="display: none"
+    >
+      <div
+        class="bg-gray-800 rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col"
+      >
+        <div
+          class="p-4 border-b border-gray-700 flex justify-between items-center"
+        >
+          <h2 class="text-xl font-bold">Prompt Library</h2>
+          <button
+            id="closeHistoryModalBtn"
+            class="text-gray-400 hover:text-white"
+          >
+            &times;
+          </button>
         </div>
+        <div class="flex border-b border-gray-700">
+          <button
+            id="historyTabBtn"
+            class="flex-1 p-3 bg-blue-600 text-white font-semibold"
+          >
+            History</button
+          ><button
+            id="favoritesTabBtn"
+            class="flex-1 p-3 bg-gray-700 text-gray-300 font-semibold"
+          >
+            Favorites
+          </button>
+        </div>
+        <div id="historyContent" class="p-4 overflow-y-auto"></div>
+        <div
+          id="favoritesContent"
+          class="p-4 overflow-y-auto"
+          style="display: none"
+        ></div>
+      </div>
     </div>
-    
-    <script src="script.js"></script>
-</body>
-</html>
 
+    <script src="./script.js"></script>
+  </body>
+</html>
