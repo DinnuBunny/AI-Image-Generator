@@ -147,7 +147,7 @@
               <textarea
                 id="prompt"
                 rows="5"
-                placeholder="Start with a word, end with a masterpiece—DinnuPixels brings your vision to life..."
+                placeholder="Start with a word, end with a masterpiece — DinnuPixels brings your vision to life..."
                 class="w-full p-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg resize-none"
               ></textarea
               ><button
@@ -200,6 +200,30 @@
               class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg"
             />
           </div>
+           <!-- Advanced Settings -->
+            <div class="mb-6">
+                 <div class="flex items-center mb-2">
+                    <label for="advancedToggle" class="text-sm font-medium text-gray-300 mr-3">Advanced Settings</label>
+                    <label for="advancedToggle" class="flex items-center cursor-pointer">
+                        <div class="relative">
+                            <input type="checkbox" id="advancedToggle" class="sr-only toggle-checkbox">
+                            <div class="toggle-label flex items-center">
+                                <div class="toggle-bg block bg-gray-600 w-14 h-8 rounded-full transition-colors"></div>
+                                <div class="toggle-dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform"></div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                <div id="advancedPanel" class="bg-gray-700/50 p-4 rounded-lg" style="display: none;">
+                     <label for="seedInput" class="block text-sm font-medium text-gray-300 mb-2">Seed (for consistent results)</label>
+                     <div class="flex items-center space-x-2">
+                         <input type="number" id="seedInput" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-lg" placeholder="Leave empty for random">
+                         <button id="randomizeSeedBtn" class="p-2 bg-gray-600 hover:bg-gray-500 rounded-lg" title="Randomize Seed">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v6h6"></path><path d="M21 12A9 9 0 0 0 6 5.3L3 8"></path><path d="M21 22v-6h-6"></path><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"></path></svg>
+                         </button>
+                     </div>
+                </div>
+            </div>
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-300 mb-2"
               >Aspect Ratio</label
