@@ -569,7 +569,7 @@ async function generateImages(prompt, seed) { // <-- FIX PART 3: Accept 'seed' a
         });
         return Promise.all(promises);
     } else {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${API_KEY}`;
         const payload = {
             instances: [{ prompt: combinedPrompt }],
             parameters: parameters // <-- FIX PART 5: Use the parameters object with the seed
