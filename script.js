@@ -39,10 +39,6 @@ const loopStatus = document.getElementById("loopStatus");
 const historyBtn = document.getElementById("historyBtn");
 const improveBtn = document.getElementById("improveBtn");
 const surpriseBtn = document.getElementById("surpriseBtn");
-const advancedToggle = document.getElementById('advancedToggle');
-const advancedPanel = document.getElementById('advancedPanel');
-const seedInput = document.getElementById('seedInput');
-const randomizeSeedBtn = document.getElementById('randomizeSeedBtn');
 
 // --- Image to Prompt Page Elements ---
 const i2pUploadInput = document.getElementById("i2pUploadInput");
@@ -73,7 +69,7 @@ let promptFavorites = [];
 
 // --- Initialization ---
 function initializeApp() {
-  watermarkNameInput.value = "DinnuBunny";
+  watermarkNameInput.value = "DinnuPixel";
   loadFromLocalStorage();
   renderHistory();
   renderFavorites();
@@ -132,15 +128,6 @@ function setupEventListeners() {
   improveBtn.addEventListener("click", improvePrompt);
   surpriseBtn.addEventListener("click", surpriseMe);
 
-    // Advanced Settings Toggle
-    advancedToggle.addEventListener('change', () => {
-        advancedPanel.style.display = advancedToggle.checked ? 'block' : 'none';
-    });
-    randomizeSeedBtn.addEventListener('click', () => {
-        seedInput.value = Math.floor(Math.random() * 1000000000);
-    });
-  
-
   // Generate Button
   generateBtn.addEventListener("click", () => {
     if (isLooping) {
@@ -157,7 +144,7 @@ function setupEventListeners() {
   });
 }
 
-// --- HELPER FUNCTION (This was missing) ---
+// --- HELPER FUNCTION ---
 function toggleButtonLoading(button, isLoading) {
   const text = button.querySelector(".btn-text");
   const loader = button.querySelector(".loader");
@@ -228,7 +215,6 @@ async function handleI2PGenerate() {
 function copyI2PResult() {
   i2pResultText.select();
   document.execCommand("copy");
-  // Optional: Add a 'Copied!' notification
 }
 
 // --- Local Storage & History/Favorites ---
@@ -409,6 +395,62 @@ function setUiState(isGenerating) {
   }
 }
 
+async function startGenerationLoop() {
+  isLooping = true;
+  if (currentLoopCount > 1) {
+    setUiState(true);
+  } else {
+    generateBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+    generateBtn.classList.add("bg-red-600", "hover:bg-red-700");
+    generateBtnContent.innerHTML = "Stop";
+    mainLoader.style.display = "flex";
+  }
+
+  const mainPrompt = promptTextarea.value.trim();
+  if (!mainPrompt) {
+    errorMessage.textContent = "Please enter a prompt.";
+    errorMessage.style.display = "block";
+    isLooping = false;
+    setUiState(false);
+    return;
+  }
+  addPromptToHistory(mainPrompt);
+  resultsGrid.innerHTML = "";
+  errorMessage.style.display = "none";
+
+  for (let i = 1; i <= currentLoopCount; i++) {
+    if (!isLooping) {
+      loopStatus.textContent = "Loop stopped by user.";
+      break;
+    }
+    loopStatus.style.display = "block";
+    loopStatus.textContent = `Running Cycle ${i} of ${currentLoopCount}...`;
+
+    try {
+      const results = await generateImages(mainPrompt);
+      if (results && results.length > 0) {
+        results.forEach((base64Data) => {
+          if (base64Data) {
+            const imageUrl = `data:image/png;base64,${base64Data}`;
+            createImageCard(imageUrl);
+            if (autoDownloadToggle.checked) {
+              triggerDownload(imageUrl);
+            }
+          }
+        });
+      } else {
+        throw new Error("Image generation failed in this cycle.");
+      }
+    } catch (error) {
+      errorMessage.textContent = error.message;
+      errorMessage.style.display = "block";
+      break;
+    }
+  }
+  if (isLooping) loopStatus.textContent = "Loop finished.";
+  isLooping = false;
+  setUiState(false);
+}
 
 function triggerDownload(imageUrl) {
   const link = document.createElement("a");
@@ -462,123 +504,79 @@ async function callGeminiVisionAPI(prompt, imageData) {
   };
   return makeApiCall(apiUrl, payload, "vision");
 }
-async function startGenerationLoop() {
-    isLooping = true;
-    if (currentLoopCount > 1) {
-        setUiState(true);
-    } else {
-        generateBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
-        generateBtn.classList.add("bg-red-600", "hover:bg-red-700");
-        generateBtnContent.innerHTML = "Stop";
-        mainLoader.style.display = "flex";
-    }
 
-    const mainPrompt = promptTextarea.value.trim();
-    if (!mainPrompt) {
-        errorMessage.textContent = "Please enter a prompt.";
-        errorMessage.style.display = "block";
-        isLooping = false;
-        setUiState(false);
-        return;
+async function generateImages(prompt) {
+  const aspectRatio = document.querySelector(
+    'input[name="aspectRatio"]:checked'
+  ).value;
+  let combinedPrompt = prompt;
+  if (watermarkToggle.checked) {
+    const watermarkName = watermarkNameInput.value.trim();
+    if (watermarkName) {
+      combinedPrompt = `${prompt} and a small elegant text watermark reading "${watermarkName}" placed in the bottom right corner, subtle, semi-transparent, blending harmoniously with the background.`;
     }
-    addPromptToHistory(mainPrompt);
-    resultsGrid.innerHTML = "";
-    errorMessage.style.display = "none";
+  }
 
-    for (let i = 1; i <= currentLoopCount; i++) {
-        if (!isLooping) {
-            loopStatus.textContent = "Loop stopped by user.";
-            break;
-        }
-        loopStatus.style.display = "block";
-        loopStatus.textContent = `Running Cycle ${i} of ${currentLoopCount}...`;
+  if (referenceImageData) {
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${API_KEY}`;
+    const promises = Array.from({ length: currentImageCount }, () => {
+      const payload = {
+        contents: [
+          {
+            parts: [
+              { text: combinedPrompt },
+              {
+                inlineData: {
+                  mimeType: referenceImageData.mimeType,
+                  data: referenceImageData.data,
+                },
+              },
+            ],
+          },
+        ],
+        generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+      };
+      return makeApiCall(apiUrl, payload, "gemini-2.0");
+    });
+    return Promise.all(promises);
+  }
 
-        try {
-            // --- FIX PART 1: Get the seed value from the input box ---
-            const seed = seedInput.value.trim() ? parseInt(seedInput.value.trim(), 10) : undefined;
-            
-            // --- FIX PART 2: Pass the seed to the next function ---
-            const results = await generateImages(mainPrompt, seed); 
-            
-            if (results && results.length > 0) {
-                results.forEach((base64Data) => {
-                    if (base64Data) {
-                        const imageUrl = `data:image/png;base64,${base64Data}`;
-                        createImageCard(imageUrl);
-                        if (autoDownloadToggle.checked) {
-                            triggerDownload(imageUrl);
-                        }
-                    }
-                });
-            } else {
-                throw new Error("Image generation failed in this cycle.");
-            }
-        } catch (error) {
-            errorMessage.textContent = error.message;
-            errorMessage.style.display = "block";
-            break;
-        }
-    }
-    if (isLooping) loopStatus.textContent = "Loop finished.";
-    isLooping = false;
-    setUiState(false);
-}
-// -- Generate images
-async function generateImages(prompt, seed) { // <-- FIX PART 3: Accept 'seed' as a parameter
-    const aspectRatio = document.querySelector(
-        'input[name="aspectRatio"]:checked'
-    ).value;
-    let combinedPrompt = prompt;
-    if (watermarkToggle.checked) {
-        const watermarkName = watermarkNameInput.value.trim();
-        if (watermarkName) {
-            combinedPrompt = `${prompt} and a small elegant text watermark reading "${watermarkName}" placed in the bottom right corner, subtle, semi-transparent, blending harmoniously with the background.`;
-        }
-    }
-
-    // --- FIX PART 4: Prepare the parameters object ---
-    const parameters = { 
-        "sampleCount": currentImageCount, 
-        "aspectRatio": aspectRatio 
+  // Smart Fallback Logic
+  try {
+    loopStatus.textContent += " (Using Gemini 2.5 Flash)";
+    const flashApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${API_KEY}`;
+    const flashPayload = {
+      contents: [{ parts: [{ text: combinedPrompt }] }],
+      generationConfig: {
+        responseModalities: ["IMAGE"],
+        candidateCount: currentImageCount,
+      },
     };
-    if (seed) {
-        parameters.seed = seed; // Add the seed if it exists
+    const flashResults = await makeApiCall(flashApiUrl, flashPayload, "gemini-2.5");
+    // Ensure we have a valid result before returning
+    if (!flashResults || flashResults.length === 0 || flashResults.includes(undefined)) {
+        throw new Error("Gemini 2.5 Flash returned no valid images.");
     }
-
-    if (referenceImageData) {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${API_KEY}`;
-        const promises = Array.from({ length: currentImageCount }, () => {
-            const payload = {
-                contents: [
-                    {
-                        parts: [
-                            { text: combinedPrompt },
-                            {
-                                inlineData: {
-                                    mimeType: referenceImageData.mimeType,
-                                    data: referenceImageData.data,
-                                },
-                            },
-                        ],
-                    },
-                ],
-                generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
-            };
-            // Note: Seed is not supported for this specific image-to-image model
-            return makeApiCall(apiUrl, payload, "gemini-2.0");
-        });
-        return Promise.all(promises);
-    } else {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${API_KEY}`;
-        const payload = {
-            instances: [{ prompt: combinedPrompt }],
-            parameters: parameters // <-- FIX PART 5: Use the parameters object with the seed
-        };
-        return makeApiCall(apiUrl, payload, "imagen-3.0");
-    }
+    return flashResults;
+  } catch (error) {
+    console.warn(
+      "Gemini 2.5 Flash failed:",
+      error.message,
+      ". Falling back to Imagen 3.0."
+    );
+    loopStatus.textContent += " (Fallback to Imagen 3.0)";
+    const imagenApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+    const imagenPayload = {
+      instances: [{ prompt: combinedPrompt }],
+      parameters: {
+        sampleCount: currentImageCount,
+        aspectRatio: aspectRatio,
+      },
+    };
+    return makeApiCall(imagenApiUrl, imagenPayload, "imagen-3.0");
+  }
 }
 
-// Generate images
 async function makeApiCall(apiUrl, payload, modelType) {
   let delay = 1000;
   const maxRetries = 5;
@@ -600,6 +598,10 @@ async function makeApiCall(apiUrl, payload, modelType) {
               .inlineData.data;
           case "imagen-3.0":
             return result.predictions.map((p) => p.bytesBase64Encoded);
+          case "gemini-2.5":
+            return result.candidates.map(
+              (c) => c.content.parts.find((p) => p.inlineData).inlineData.data
+            );
         }
         throw new Error("Invalid model type specified.");
       } else if (response.status === 429 || response.status >= 500) {
@@ -623,3 +625,4 @@ async function makeApiCall(apiUrl, payload, modelType) {
 
 // --- Run on page load ---
 initializeApp();
+
