@@ -8,12 +8,12 @@
   "description": "An AI-powered image generation tool.",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icon-main.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "icon-main.png",
       "sizes": "512x512",
       "type": "image/png"
     }
