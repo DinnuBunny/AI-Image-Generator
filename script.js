@@ -144,7 +144,7 @@ function setupEventListeners() {
   });
 }
 
-// --- HELPER FUNCTION ---
+// --- HELPER FUNCTION  ---
 function toggleButtonLoading(button, isLoading) {
   const text = button.querySelector(".btn-text");
   const loader = button.querySelector(".loader");
@@ -400,8 +400,8 @@ async function startGenerationLoop() {
   if (currentLoopCount > 1) {
     setUiState(true);
   } else {
-    generateBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
-    generateBtn.classList.add("bg-red-600", "hover:bg-red-700");
+    generateBtn.classList.remove("bg-blue-600");
+    generateBtn.classList.add("bg-red-600");
     generateBtnContent.innerHTML = "Stop";
     mainLoader.style.display = "flex";
   }
@@ -513,7 +513,7 @@ async function generateImages(prompt) {
   if (watermarkToggle.checked) {
     const watermarkName = watermarkNameInput.value.trim();
     if (watermarkName) {
-      combinedPrompt = `${prompt} and a small elegant text watermark reading "${watermarkName}" placed in the bottom right corner, subtle, semi-transparent, blending harmoniously with the background.`;
+      combinedPrompt = `${prompt} and a small elegant text watermark reading "${watermarkName}" placed in the bottom right corner with some bottom padding, subtle, semi-transparent, blending harmoniously with the background.`;
     }
   }
 
@@ -539,41 +539,13 @@ async function generateImages(prompt) {
       return makeApiCall(apiUrl, payload, "gemini-2.0");
     });
     return Promise.all(promises);
-  }
-
-  // Smart Fallback Logic
-  try {
-    loopStatus.textContent += " (Using Gemini 2.5 Flash)";
-    const flashApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${API_KEY}`;
-    const flashPayload = {
-      contents: [{ parts: [{ text: combinedPrompt }] }],
-      generationConfig: {
-        responseModalities: ["IMAGE"],
-        candidateCount: currentImageCount,
-      },
-    };
-    const flashResults = await makeApiCall(flashApiUrl, flashPayload, "gemini-2.5");
-    // Ensure we have a valid result before returning
-    if (!flashResults || flashResults.length === 0 || flashResults.includes(undefined)) {
-        throw new Error("Gemini 2.5 Flash returned no valid images.");
-    }
-    return flashResults;
-  } catch (error) {
-    console.warn(
-      "Gemini 2.5 Flash failed:",
-      error.message,
-      ". Falling back to Imagen 3.0."
-    );
-    loopStatus.textContent += " (Fallback to Imagen 3.0)";
-    const imagenApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
-    const imagenPayload = {
+  } else {
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+    const payload = {
       instances: [{ prompt: combinedPrompt }],
-      parameters: {
-        sampleCount: currentImageCount,
-        aspectRatio: aspectRatio,
-      },
+      parameters: { sampleCount: currentImageCount, aspectRatio: aspectRatio },
     };
-    return makeApiCall(imagenApiUrl, imagenPayload, "imagen-3.0");
+    return makeApiCall(apiUrl, payload, "imagen-3.0");
   }
 }
 
@@ -598,10 +570,6 @@ async function makeApiCall(apiUrl, payload, modelType) {
               .inlineData.data;
           case "imagen-3.0":
             return result.predictions.map((p) => p.bytesBase64Encoded);
-          case "gemini-2.5":
-            return result.candidates.map(
-              (c) => c.content.parts.find((p) => p.inlineData).inlineData.data
-            );
         }
         throw new Error("Invalid model type specified.");
       } else if (response.status === 429 || response.status >= 500) {
@@ -625,4 +593,3 @@ async function makeApiCall(apiUrl, payload, modelType) {
 
 // --- Run on page load ---
 initializeApp();
-
