@@ -48,6 +48,8 @@ const i2pGenerateBtn = document.getElementById("i2pGenerateBtn");
 const i2pResultContainer = document.getElementById("i2pResultContainer");
 const i2pResultText = document.getElementById("i2pResultText");
 const i2pCopyBtn = document.getElementById("i2pCopyBtn");
+const i2pAdditionalText = document.getElementById("i2pAdditionalText");
+const i2pCustomStyle = document.getElementById("i2pCustomStyle");
 let i2pImageData = null;
 
 // --- History Modal Elements ---
@@ -123,6 +125,11 @@ function setupEventListeners() {
   i2pUploadInput.addEventListener("change", handleI2PImageUpload);
   i2pGenerateBtn.addEventListener("click", handleI2PGenerate);
   i2pCopyBtn.addEventListener("click", copyI2PResult);
+  i2pCustomStyle.addEventListener("focus", () => {
+    document.querySelector(
+      'input[name="i2pStyle"][value="custom"]'
+    ).checked = true;
+  });
 
   // LLM Buttons
   improveBtn.addEventListener("click", improvePrompt);
@@ -144,7 +151,7 @@ function setupEventListeners() {
   });
 }
 
-// --- HELPER FUNCTION  ---
+// --- HELPER FUNCTION ---
 function toggleButtonLoading(button, isLoading) {
   const text = button.querySelector(".btn-text");
   const loader = button.querySelector(".loader");
@@ -201,8 +208,21 @@ async function handleI2PGenerate() {
   if (!i2pImageData) return;
   toggleButtonLoading(i2pGenerateBtn, true);
 
-  const userPrompt =
-    "Describe this image in detail for an AI image generator. Focus on the subject, style, composition, colors, lighting, and any specific artistic details. Craft a prompt that could be used to generate a similar image.";
+  const additionalText = i2pAdditionalText.value.trim();
+  let style = document.querySelector('input[name="i2pStyle"]:checked').value;
+  if (style === "custom") {
+    style = i2pCustomStyle.value.trim();
+  }
+
+  let userPrompt =
+    "Describe this image in detail for an AI image generator. Focus on the subject, style, composition, colors, and lighting. Craft a concise, single-paragraph prompt, around 4-5 lines long.";
+  if (style) {
+    userPrompt += ` Infuse the description with a '${style}' artistic style.`;
+  }
+  if (additionalText) {
+    userPrompt += ` Also, incorporate these modifications: '${additionalText}'.`;
+  }
+
   const generatedPrompt = await callGeminiVisionAPI(userPrompt, i2pImageData);
 
   if (generatedPrompt) {
@@ -400,8 +420,8 @@ async function startGenerationLoop() {
   if (currentLoopCount > 1) {
     setUiState(true);
   } else {
-    generateBtn.classList.remove("bg-blue-600");
-    generateBtn.classList.add("bg-red-600");
+    generateBtn.classList.remove("bg-blue-600", "hover:bg-blue-700");
+    generateBtn.classList.add("bg-red-600", "hover:bg-red-700");
     generateBtnContent.innerHTML = "Stop";
     mainLoader.style.display = "flex";
   }
@@ -479,9 +499,9 @@ function createImageCard(imageUrl) {
 
 // --- API Call Logic ---
 async function callGeminiTextAPI(userPrompt, systemInstruction = "") {
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
   const payload = {
-    contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+    contents: [{ parts: [{ text: userPrompt }] }],
   };
   if (systemInstruction)
     payload.systemInstruction = { parts: [{ text: systemInstruction }] };
@@ -489,7 +509,7 @@ async function callGeminiTextAPI(userPrompt, systemInstruction = "") {
 }
 
 async function callGeminiVisionAPI(prompt, imageData) {
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${API_KEY}`;
   const payload = {
     contents: [
       {
@@ -513,7 +533,7 @@ async function generateImages(prompt) {
   if (watermarkToggle.checked) {
     const watermarkName = watermarkNameInput.value.trim();
     if (watermarkName) {
-      combinedPrompt = `${prompt} and a small elegant text watermark reading "${watermarkName}" placed in the bottom right corner with some bottom padding, subtle, semi-transparent, blending harmoniously with the background.`;
+      combinedPrompt = `${prompt} and a small elegant text watermark reading "${watermarkName}" placed in the bottom right corner, subtle, semi-transparent, blending harmoniously with the background.`;
     }
   }
 
@@ -539,13 +559,48 @@ async function generateImages(prompt) {
       return makeApiCall(apiUrl, payload, "gemini-2.0");
     });
     return Promise.all(promises);
-  } else {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
-    const payload = {
-      instances: [{ prompt: combinedPrompt }],
-      parameters: { sampleCount: currentImageCount, aspectRatio: aspectRatio },
+  }
+
+  // Smart Fallback Logic
+  try {
+    loopStatus.textContent += " (Using Gemini 2.5 Flash)";
+    const flashApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${API_KEY}`;
+    const flashPayload = {
+      contents: [{ parts: [{ text: combinedPrompt }] }],
+      generationConfig: {
+        responseModalities: ["IMAGE"],
+        candidateCount: currentImageCount,
+      },
     };
-    return makeApiCall(apiUrl, payload, "imagen-3.0");
+    const flashResults = await makeApiCall(
+      flashApiUrl,
+      flashPayload,
+      "gemini-2.5"
+    );
+    if (
+      !flashResults ||
+      flashResults.length === 0 ||
+      flashResults.some((r) => !r)
+    ) {
+      throw new Error("Gemini 2.5 Flash returned no valid images.");
+    }
+    return flashResults;
+  } catch (error) {
+    console.warn(
+      "Gemini 2.5 Flash failed:",
+      error.message,
+      ". Falling back to Imagen 3.0."
+    );
+    loopStatus.textContent += " (Fallback to Imagen 3.0)";
+    const imagenApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+    const imagenPayload = {
+      instances: [{ prompt: combinedPrompt }],
+      parameters: {
+        sampleCount: currentImageCount,
+        aspectRatio: aspectRatio,
+      },
+    };
+    return makeApiCall(imagenApiUrl, imagenPayload, "imagen-3.0");
   }
 }
 
@@ -570,6 +625,10 @@ async function makeApiCall(apiUrl, payload, modelType) {
               .inlineData.data;
           case "imagen-3.0":
             return result.predictions.map((p) => p.bytesBase64Encoded);
+          case "gemini-2.5":
+            return result.candidates.map(
+              (c) => c.content.parts.find((p) => p.inlineData).inlineData.data
+            );
         }
         throw new Error("Invalid model type specified.");
       } else if (response.status === 429 || response.status >= 500) {

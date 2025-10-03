@@ -3,12 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:title" content="DinnuPixels – AI Image Generator" />
-    <meta property="og:description" content="Generate realistic AI images with prompts – no code required!" />
-    <meta property="og:url" content="https://dinnubunny.github.io/AI-Image-Generator/" />
-    <meta property="og:image" content="https://dinnubunny.github.io/AI-Image-Generator/preview.png" />
     <title>DinnuPixels</title>
-    <link rel="icon" href="https://dinnubunny.github.io/AI-Image-Generator/preview.png" sizes="any" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
@@ -45,7 +40,6 @@
       <!-- Page 1: Image Generation -->
       <div id="createPage">
         <fieldset id="settingsFieldset">
-          <!-- All form elements for the create page go here -->
           <div class="mb-6">
             <label class="block text-sm font-medium text-gray-300 mb-2"
               >Reference Image (Optional)</label
@@ -130,7 +124,7 @@
                   id="improveBtn"
                   class="text-xs bg-indigo-600 text-white font-semibold py-1 px-2 rounded-md flex items-center"
                 >
-                  <span class="btn-text">✨Improve</span
+                  <span class="btn-text">✨ Improve</span
                   ><span
                     class="loader btn-loader-small"
                     style="display: none"
@@ -140,7 +134,7 @@
                   id="surpriseBtn"
                   class="text-xs bg-purple-600 text-white font-semibold py-1 px-2 rounded-md flex items-center"
                 >
-                  <span class="btn-text">✨Surprise Me</span
+                  <span class="btn-text">✨ Surprise Me</span
                   ><span
                     class="loader btn-loader-small"
                     style="display: none"
@@ -152,7 +146,7 @@
               <textarea
                 id="prompt"
                 rows="5"
-                placeholder="Start with a word, end with a masterpiece —DinnuPixels brings your vision to life..."
+                placeholder="Start with a word, end with a masterpiece..."
                 class="w-full p-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg resize-none"
               ></textarea
               ><button
@@ -379,6 +373,98 @@
             accept="image/png, image/jpeg"
           />
         </div>
+
+        <!-- Additional Text -->
+        <div class="mb-6">
+          <label
+            for="i2pAdditionalText"
+            class="block text-sm font-medium text-gray-300 mb-2"
+            >Additional Instructions (Optional)</label
+          >
+          <textarea
+            id="i2pAdditionalText"
+            rows="2"
+            class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg resize-none"
+            placeholder="e.g., make it more cinematic, change season to winter..."
+          ></textarea>
+        </div>
+
+        <!-- Style Suggestions -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-300 mb-2"
+            >Style</label
+          >
+          <div id="i2pStyleContainer" class="flex flex-wrap gap-2 text-sm">
+            <label class="cursor-pointer"
+              ><input
+                type="radio"
+                name="i2pStyle"
+                value=""
+                class="sr-only peer"
+                checked
+              /><span
+                class="inline-block px-3 py-1 rounded-full bg-gray-600 peer-checked:bg-blue-600"
+                >None</span
+              ></label
+            >
+            <label class="cursor-pointer"
+              ><input
+                type="radio"
+                name="i2pStyle"
+                value="Photorealistic"
+                class="sr-only peer"
+              /><span
+                class="inline-block px-3 py-1 rounded-full bg-gray-600 peer-checked:bg-blue-600"
+                >Photorealistic</span
+              ></label
+            >
+            <label class="cursor-pointer"
+              ><input
+                type="radio"
+                name="i2pStyle"
+                value="Anime"
+                class="sr-only peer"
+              /><span
+                class="inline-block px-3 py-1 rounded-full bg-gray-600 peer-checked:bg-blue-600"
+                >Anime</span
+              ></label
+            >
+            <label class="cursor-pointer"
+              ><input
+                type="radio"
+                name="i2pStyle"
+                value="Ghibli"
+                class="sr-only peer"
+              /><span
+                class="inline-block px-3 py-1 rounded-full bg-gray-600 peer-checked:bg-blue-600"
+                >Ghibli</span
+              ></label
+            >
+            <label class="cursor-pointer"
+              ><input
+                type="radio"
+                name="i2pStyle"
+                value="Cyberpunk"
+                class="sr-only peer"
+              /><span
+                class="inline-block px-3 py-1 rounded-full bg-gray-600 peer-checked:bg-blue-600"
+                >Cyberpunk</span
+              ></label
+            >
+            <label class="cursor-pointer flex-grow"
+              ><input
+                type="radio"
+                name="i2pStyle"
+                value="custom"
+                class="sr-only peer" /><input
+                type="text"
+                id="i2pCustomStyle"
+                class="w-full px-3 py-1 rounded-full bg-gray-600 peer-checked:bg-blue-600 placeholder-gray-400"
+                placeholder="Custom style..."
+            /></label>
+          </div>
+        </div>
+
         <button
           id="i2pGenerateBtn"
           class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center opacity-50"
