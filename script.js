@@ -534,4 +534,62 @@ async function generateImages(prompt) {
             ],
           },
         ],
-        generationConfig: { responseModalities: ["TEXT", "IMA
+        generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+      };
+      return makeApiCall(apiUrl, payload, "gemini-2.0");
+    });
+    return Promise.all(promises);
+  } else {
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${API_KEY}`;
+    const payload = {
+      instances: [{ prompt: combinedPrompt }],
+      parameters: { sampleCount: currentImageCount, aspectRatio: aspectRatio },
+    };
+    return makeApiCall(apiUrl, payload, "imagen-3.0");
+  }
+}
+
+async function makeApiCall(apiUrl, payload, modelType) {
+  let delay = 1000;
+  const maxRetries = 5;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (response.ok) {
+        const result = await response.json();
+        switch (modelType) {
+          case "text":
+          case "vision":
+            return result.candidates[0].content.parts[0].text;
+          case "gemini-2.0":
+            return result.candidates[0].content.parts.find((p) => p.inlineData)
+              .inlineData.data;
+          case "imagen-3.0":
+            return result.predictions.map((p) => p.bytesBase64Encoded);
+        }
+        throw new Error("Invalid model type specified.");
+      } else if (response.status === 429 || response.status >= 500) {
+        if (i < maxRetries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, (delay *= 2)));
+        } else {
+          throw new Error(`API is busy. Please try again later.`);
+        }
+      } else {
+        const errorText = await response.text();
+        throw new Error(
+          `API request failed with status ${response.status}: ${errorText}`
+        );
+      }
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      await new Promise((resolve) => setTimeout(resolve, (delay *= 2)));
+    }
+  }
+}
+
+// --- Run on page load ---
+initializeApp();
