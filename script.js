@@ -1,6 +1,6 @@
 // --- IMPORTANT: PASTE YOUR API KEY HERE ---
 // This key will be used for all API calls (Image Gen, Improve, Surprise Me, Image-to-Prompt)
-const API_KEY = "AIzaSyCduopcwH-7D_wj3V9MclKsu3ZoHx9KcuY";
+const API_KEY = "AIzaSyB4gbYjcDUIvrDfaW185q6x9oz-JXDPY-U";
 
 // --- UI Elements ---
 const settingsFieldset = document.getElementById("settingsFieldset");
